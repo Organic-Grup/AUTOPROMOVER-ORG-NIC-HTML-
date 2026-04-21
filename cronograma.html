@@ -14,7 +14,6 @@ body {
     color:white;
 }
 
-/* MOBILE FIRST */
 .container {
     padding:20px;
     max-width:900px;
@@ -64,35 +63,13 @@ button {
     color:cyan;
 }
 </style>
-    <link rel="manifest" href="manifest.json">
 
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#00ffff">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 </head>
 
 <body>
-    <button onclick="rodar()"
-style="
-padding:12px 20px;
-background:cyan;
-border:none;
-border-radius:10px;
-font-weight:bold;
-cursor:pointer;">
-🚀 Avançar Dia
-    </button>
-    <button onclick="rodar()"
-style="
-padding:12px 20px;
-background:cyan;
-border:none;
-border-radius:10px;
-font-weight:bold;
-cursor:pointer;">
-🚀 Avançar Dia
-    </button>
 
 <div class="container">
 
@@ -101,7 +78,7 @@ cursor:pointer;">
 <!-- LOGIN -->
 <div class="card">
 <h2>🔐 Login</h2>
-<input id="nome" placeholder="Seu nome">
+<input id="nome" placeholder="Seu número (ex: 1, 2, 3...)">
 <button onclick="login()">Entrar</button>
 <p id="user"></p>
 </div>
@@ -112,7 +89,7 @@ cursor:pointer;">
 <div class="lista" id="fila"></div>
 
 <button onclick="add10()">+10 Pessoas</button>
-<button onclick="rodar()">Avançar Dia</button>
+<button onclick="rodar()">🚀 Avançar Dia</button>
 </div>
 
 <!-- STATUS -->
@@ -141,20 +118,17 @@ cursor:pointer;">
 <script>
 
 let fila = JSON.parse(localStorage.getItem("fila")) || [];
-let horas = JSON.parse(localStorage.getItem("horas")) || {};
+let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
 let usuario = localStorage.getItem("usuario");
 
-function salvar(){
-    localStorage.setItem("fila", JSON.stringify(fila));
-    localStorage.setItem("horas", JSON.stringify(horas));
-}
-
+// iniciar fila
 function iniciar(){
     if(fila.length === 0){
         for(let i=1;i<=10;i++) fila.push(i);
     }
 }
 
+// login
 function login(){
     let nome = document.getElementById("nome").value;
     usuario = nome;
@@ -162,20 +136,8 @@ function login(){
     atualizar();
 }
 
+// atualizar tela
 function atualizar(){
-
-    let total = fila.length;
-    let dias = Math.ceil(total / 6);
-
-    document.getElementById("total").innerText = "Total: " + total;
-    document.getElementById("dias").innerText = "Ciclo: " + dias + " dias";
-
-    function atualizar() {
-
-    // LIMPA TUDO ANTES DE REESCREVER
-    document.getElementById("fila").innerText = "";
-    document.getElementById("ativos").innerText = "";
-    document.getElementById("espera").innerText = "";
 
     let total = fila.length;
     let dias = Math.ceil(total / 6);
@@ -191,19 +153,10 @@ function atualizar(){
         "A:"+ativos[0]+" B:"+ativos[1]+" | C:"+ativos[2]+" D:"+ativos[3]+" | E:"+ativos[4]+" F:"+ativos[5];
 
     let espera = fila.slice(6);
-    document.getElementById("espera").innerText = espera.join(", ");
-}
-
-    let ativos = fila.slice(0,6);
-
-    document.getElementById("ativos").innerText =
-        "A:"+ativos[0]+" B:"+ativos[1]+" | C:"+ativos[2]+" D:"+ativos[3]+" | E:"+ativos[4]+" F:"+ativos[5];
-
-    let espera = fila.slice(6);
     document.getElementById("espera").innerText = "Espera: " + espera.join(", ");
 
-    // ALERTA
     if(usuario){
+
         document.getElementById("user").innerText = "Logado: " + usuario;
 
         if(ativos.includes(Number(usuario))){
@@ -213,67 +166,58 @@ function atualizar(){
             document.getElementById("minhaVez").innerText = "Aguardando...";
         }
 
-        // HORAS
-        if(!horas[usuario]) horas[usuario] = 0;
+        if(!usuarios[usuario]) usuarios[usuario] = { horas: 0 };
+
         document.getElementById("horas").innerText =
-            "Você assistiu: " + horas[usuario] + "h";
+            "Você assistiu: " + usuarios[usuario].horas + "h";
     }
 }
 
+// rodar dia
 function rodar(){
+
+    let ativos = fila.slice(0,6);
+
+    ativos.forEach(id => {
+
+        if(!usuarios[id]){
+            usuarios[id] = { horas: 0 };
+        }
+
+        usuarios[id].horas += 6;
+    });
+
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
     let usados = fila.splice(0,6);
     fila = fila.concat(usados);
 
-    // soma horas (6h por dia)
-    if(usuario){
-        horas[usuario] = (horas[usuario] || 0) + 6;
-    }
+    localStorage.setItem("fila", JSON.stringify(fila));
 
-    salvar();
     atualizar();
 }
 
+// adicionar +10
 function add10(){
     let atual = fila.length;
     for(let i=1;i<=10;i++){
         fila.push(atual+i);
     }
-    salvar();
-    atualizar();
-}
-    function rodar() {
-
-    // 1. pega os 6 primeiros (quem participou hoje)
-    let ativos = fila.slice(0, 6);
-
-    // 2. soma horas pra cada um deles
-    ativos.forEach(id => {
-
-        if (!usuarios[id]) {
-            usuarios[id] = { horas: 0 };
-        }
-
-        usuarios[id].horas += 6; // cada rodada = 6h de participação
-    });
-
-    // 3. salva banco de horas
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
-
-    // 4. move os 6 primeiros pro final da fila
-    let usados = fila.splice(0, 6);
-    fila = fila.concat(usados);
-
-    // 5. atualiza tela
+    localStorage.setItem("fila", JSON.stringify(fila));
     atualizar();
 }
 
+// iniciar sistema
+iniciar();
+atualizar();
 
 </script>
-    <script>
+
+<script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
 </script>
 
 </body>
-  </html>
+</html>
