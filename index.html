@@ -1,5 +1,8 @@
 <!DOCTYPE html><html lang="pt-BR">
 <head>
+  <link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#00ffff">
   
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -89,7 +92,14 @@ canvas{position:fixed;top:0;left:0;z-index:-1}
   .steps{grid-template-columns:1fr}
   .logo-white,.logo-green{font-size:36px}
 }
-</style></head><body><!-- LOADER --><div id="loader">
+</style></head>
+  <script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+  
+  <body><!-- LOADER --><div id="loader">
  <img src="file_000000001928720e8e1836080fc5bc2a">
  <span>Carregando experiência...</span>
 </div><div class="cursor-glow" id="cursorGlow"></div>
