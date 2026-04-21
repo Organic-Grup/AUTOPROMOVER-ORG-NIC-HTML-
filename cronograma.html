@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Cronograma PRO</title>
+
+<style>
+body {
+    margin:0;
+    font-family: Arial;
+    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:white;
+}
+
+/* MOBILE FIRST */
+.container {
+    padding:20px;
+    max-width:900px;
+    margin:auto;
+}
+
+h1 {
+    text-align:center;
+}
+
+.card {
+    background: rgba(255,255,255,0.05);
+    padding:15px;
+    border-radius:15px;
+    margin-bottom:15px;
+    box-shadow:0 0 15px rgba(0,255,255,0.2);
+}
+
+input {
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border-radius:8px;
+    border:none;
+}
+
+button {
+    padding:10px;
+    margin-top:10px;
+    width:100%;
+    border:none;
+    border-radius:10px;
+    background:cyan;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.lista {
+    max-height:150px;
+    overflow:auto;
+    background:rgba(0,0,0,0.4);
+    padding:10px;
+    border-radius:10px;
+}
+
+.highlight {
+    color:cyan;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🚀 Cronograma PRO</h1>
+
+<!-- LOGIN -->
+<div class="card">
+<h2>🔐 Login</h2>
+<input id="nome" placeholder="Seu nome">
+<button onclick="login()">Entrar</button>
+<p id="user"></p>
+</div>
+
+<!-- CADASTRO -->
+<div class="card">
+<h2>👥 Participantes</h2>
+<div class="lista" id="fila"></div>
+
+<button onclick="add10()">+10 Pessoas</button>
+<button onclick="rodar()">Avançar Dia</button>
+</div>
+
+<!-- STATUS -->
+<div class="card">
+<h2>📊 Status</h2>
+<p id="total"></p>
+<p id="dias"></p>
+<p id="minhaVez"></p>
+</div>
+
+<!-- HOJE -->
+<div class="card">
+<h2>🎥 Hoje</h2>
+<p id="ativos"></p>
+<p id="espera"></p>
+</div>
+
+<!-- HORAS -->
+<div class="card">
+<h2>⏱️ Horas Assistidas</h2>
+<p id="horas"></p>
+</div>
+
+</div>
+
+<script>
+
+let fila = JSON.parse(localStorage.getItem("fila")) || [];
+let horas = JSON.parse(localStorage.getItem("horas")) || {};
+let usuario = localStorage.getItem("usuario");
+
+function salvar(){
+    localStorage.setItem("fila", JSON.stringify(fila));
+    localStorage.setItem("horas", JSON.stringify(horas));
+}
+
+function iniciar(){
+    if(fila.length === 0){
+        for(let i=1;i<=10;i++) fila.push(i);
+    }
+}
+
+function login(){
+    let nome = document.getElementById("nome").value;
+    usuario = nome;
+    localStorage.setItem("usuario", nome);
+    atualizar();
+}
+
+function atualizar(){
+
+    let total = fila.length;
+    let dias = Math.ceil(total / 6);
+
+    document.getElementById("total").innerText = "Total: " + total;
+    document.getElementById("dias").innerText = "Ciclo: " + dias + " dias";
+
+    document.getElementById("fila").innerText = fila.join(", ");
+
+    let ativos = fila.slice(0,6);
+
+    document.getElementById("ativos").innerText =
+        "A:"+ativos[0]+" B:"+ativos[1]+" | C:"+ativos[2]+" D:"+ativos[3]+" | E:"+ativos[4]+" F:"+ativos[5];
+
+    let espera = fila.slice(6);
+    document.getElementById("espera").innerText = "Espera: " + espera.join(", ");
+
+    // ALERTA
+    if(usuario){
+        document.getElementById("user").innerText = "Logado: " + usuario;
+
+        if(ativos.includes(Number(usuario))){
+            document.getElementById("minhaVez").innerHTML =
+                "<span class='highlight'>🔥 É SUA VEZ HOJE!</span>";
+        } else {
+            document.getElementById("minhaVez").innerText = "Aguardando...";
+        }
+
+        // HORAS
+        if(!horas[usuario]) horas[usuario] = 0;
+        document.getElementById("horas").innerText =
+            "Você assistiu: " + horas[usuario] + "h";
+    }
+}
+
+function rodar(){
+    let usados = fila.splice(0,6);
+    fila = fila.concat(usados);
+
+    // soma horas (6h por dia)
+    if(usuario){
+        horas[usuario] = (horas[usuario] || 0) + 6;
+    }
+
+    salvar();
+    atualizar();
+}
+
+function add10(){
+    let atual = fila.length;
+    for(let i=1;i<=10;i++){
+        fila.push(atual+i);
+    }
+    salvar();
+    atualizar();
+}
+
+iniciar();
+atualizar();
+
+</script>
+
+</body>
+  </html>
