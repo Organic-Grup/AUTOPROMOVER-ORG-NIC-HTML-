@@ -117,27 +117,48 @@ button {
 
 <script>
 
+// =====================
+// DADOS
+// =====================
 let fila = JSON.parse(localStorage.getItem("fila")) || [];
 let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
 let usuario = localStorage.getItem("usuario");
 
-// iniciar fila
+// =====================
+// INICIAR FILA
+// =====================
 function iniciar(){
     if(fila.length === 0){
         for(let i=1;i<=10;i++) fila.push(i);
     }
 }
 
-// login
+// =====================
+// LOGIN
+// =====================
 function login(){
-    let nome = document.getElementById("nome").value;
+    let nome = document.getElementById("nome").value.trim();
+
+    if(nome === ""){
+        alert("Digite seu número!");
+        return;
+    }
+
     usuario = nome;
     localStorage.setItem("usuario", nome);
+
     atualizar();
 }
 
-// atualizar tela
+// =====================
+// ATUALIZAR TELA
+// =====================
 function atualizar(){
+
+    // limpa antes de reescrever (evita bug visual)
+    document.getElementById("fila").innerText = "";
+    document.getElementById("ativos").innerText = "";
+    document.getElementById("espera").innerText = "";
 
     let total = fila.length;
     let dias = Math.ceil(total / 6);
@@ -155,6 +176,7 @@ function atualizar(){
     let espera = fila.slice(6);
     document.getElementById("espera").innerText = "Espera: " + espera.join(", ");
 
+    // STATUS DO USUÁRIO
     if(usuario){
 
         document.getElementById("user").innerText = "Logado: " + usuario;
@@ -166,17 +188,23 @@ function atualizar(){
             document.getElementById("minhaVez").innerText = "Aguardando...";
         }
 
-        if(!usuarios[usuario]) usuarios[usuario] = { horas: 0 };
+        if(!usuarios[usuario]){
+            usuarios[usuario] = { horas: 0 };
+        }
 
         document.getElementById("horas").innerText =
             "Você assistiu: " + usuarios[usuario].horas + "h";
     }
 }
 
+// =====================
+// AVANÇAR DIA
+// =====================
 function rodar(){
 
     let ativos = fila.slice(0,6);
 
+    // soma horas para todos os 6 ativos
     ativos.forEach(id=>{
         if(!usuarios[id]){
             usuarios[id] = { horas: 0 };
@@ -184,57 +212,40 @@ function rodar(){
         usuarios[id].horas += 6;
     });
 
+    // salva horas
     localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
+    // gira fila
     let usados = fila.splice(0,6);
     fila = fila.concat(usados);
 
+    // salva fila
     localStorage.setItem("fila", JSON.stringify(fila));
 
     atualizar();
 }
 
-    let ativos = fila.slice(0,6);
-
-    ativos.forEach(id => {
-
-        if(!usuarios[id]){
-            usuarios[id] = { horas: 0 };
-        }
-
-        usuarios[id].horas += 6;
-    });
-
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
-
-    let usados = fila.splice(0,6);
-    fila = fila.concat(usados);
-
-    localStorage.setItem("fila", JSON.stringify(fila));
-
-    atualizar();
-}
-
-// adicionar +10
+// =====================
+// ADICIONAR +10
+// =====================
 function add10(){
     let atual = fila.length;
+
     for(let i=1;i<=10;i++){
-        fila.push(atual+i);
+        fila.push(atual + i);
     }
+
     localStorage.setItem("fila", JSON.stringify(fila));
+
     atualizar();
 }
 
-// iniciar sistema
+// =====================
+// INICIAR SISTEMA
+// =====================
 iniciar();
-atualizar();
-
-</script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
-}
+atualizar(); 
+    
 </script>
 
 </body>
