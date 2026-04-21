@@ -1,3 +1,4 @@
+let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
 const CACHE_NAME = "cronograma-cache-v1";
 
 self.addEventListener("install", e => {
