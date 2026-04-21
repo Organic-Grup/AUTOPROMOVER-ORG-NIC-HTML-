@@ -98,7 +98,26 @@ ul{margin:8px 0 0 18px;color:var(--muted)}
   .steps{grid-template-columns:1fr}
   .header img{width:180px;height:180px}
 }
-</style></head><body><!-- LOGO NO TOPO (IMAGEM FORNECIDA) --><div class="header">
+
+/* LOGO ANIMATION */
+.header img{
+  animation: glowPulse 3s ease-in-out infinite alternate;
+}
+@keyframes glowPulse{
+  from{ box-shadow:0 0 20px rgba(56,189,248,0.2), 0 0 40px rgba(34,197,94,0.15);} 
+  to{ box-shadow:0 0 40px rgba(56,189,248,0.5), 0 0 80px rgba(34,197,94,0.35);} 
+}
+
+/* PARTICLES CANVAS */
+#particles{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  z-index:-1;
+}
+
+</style></head><body>
+<canvas id="particles"></canvas><!-- LOGO NO TOPO (IMAGEM FORNECIDA) --><div class="header">
   <img src="file_000000001928720e8e1836080fc5bc2a" alt="Organic HTML Autopromove">
 </div><div class="nav">
   <div><strong>Autopromover</strong></div>
@@ -134,5 +153,53 @@ ul{margin:8px 0 0 18px;color:var(--muted)}
     <br>
     <a class="btn" href="https://wa.me/13678903119?text=Quero%20entrar%20no%20grupo" target="_blank">ENTRAR NO GRUPO</a>
   </div>  <div class="footer">Privacidade: seus dados não são compartilhados.</div>
-</div></body>
+</div><script>
+// PARTICLES EFFECT
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particlesArray = [];
+
+class Particle{
+ constructor(){
+  this.x = Math.random()*canvas.width;
+  this.y = Math.random()*canvas.height;
+  this.size = Math.random()*2;
+  this.speedX = (Math.random()-0.5)*0.5;
+  this.speedY = (Math.random()-0.5)*0.5;
+ }
+ update(){
+  this.x += this.speedX;
+  this.y += this.speedY;
+ }
+ draw(){
+  ctx.fillStyle = 'rgba(56,189,248,0.5)';
+  ctx.beginPath();
+  ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+  ctx.fill();
+ }
+}
+
+function init(){
+ particlesArray=[];
+ for(let i=0;i<80;i++){ particlesArray.push(new Particle()); }
+}
+
+function animate(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ particlesArray.forEach(p=>{p.update();p.draw();});
+ requestAnimationFrame(animate);
+}
+
+init();
+animate();
+
+window.addEventListener('resize',()=>{
+ canvas.width=window.innerWidth;
+ canvas.height=window.innerHeight;
+ init();
+});
+</script></body>
 </html>
