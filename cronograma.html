@@ -150,7 +150,29 @@ function atualizar(){
     document.getElementById("total").innerText = "Total: " + total;
     document.getElementById("dias").innerText = "Ciclo: " + dias + " dias";
 
+    function atualizar() {
+
+    // LIMPA TUDO ANTES DE REESCREVER
+    document.getElementById("fila").innerText = "";
+    document.getElementById("ativos").innerText = "";
+    document.getElementById("espera").innerText = "";
+
+    let total = fila.length;
+    let dias = Math.ceil(total / 6);
+
+    document.getElementById("total").innerText = "Total: " + total;
+    document.getElementById("dias").innerText = "Ciclo: " + dias + " dias";
+
     document.getElementById("fila").innerText = fila.join(", ");
+
+    let ativos = fila.slice(0,6);
+
+    document.getElementById("ativos").innerText =
+        "A:"+ativos[0]+" B:"+ativos[1]+" | C:"+ativos[2]+" D:"+ativos[3]+" | E:"+ativos[4]+" F:"+ativos[5];
+
+    let espera = fila.slice(6);
+    document.getElementById("espera").innerText = espera.join(", ");
+}
 
     let ativos = fila.slice(0,6);
 
