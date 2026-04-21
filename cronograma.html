@@ -173,8 +173,26 @@ function atualizar(){
     }
 }
 
-// rodar dia
 function rodar(){
+
+    let ativos = fila.slice(0,6);
+
+    ativos.forEach(id=>{
+        if(!usuarios[id]){
+            usuarios[id] = { horas: 0 };
+        }
+        usuarios[id].horas += 6;
+    });
+
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+    let usados = fila.splice(0,6);
+    fila = fila.concat(usados);
+
+    localStorage.setItem("fila", JSON.stringify(fila));
+
+    atualizar();
+}
 
     let ativos = fila.slice(0,6);
 
