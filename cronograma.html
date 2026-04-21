@@ -116,7 +116,7 @@ button {
 </div>
 
 <script>
-
+    
 // =====================
 // DADOS
 // =====================
@@ -139,13 +139,14 @@ function iniciar(){
 function login(){
     let nome = document.getElementById("nome").value.trim();
 
-    if(nome === ""){
-        alert("Digite seu número!");
+    // validação
+    if(nome === "" || isNaN(nome)){
+        alert("Digite apenas números!");
         return;
     }
 
-    usuario = nome;
-    localStorage.setItem("usuario", nome);
+    usuario = Number(nome); // 🔥 agora é número de verdade
+    localStorage.setItem("usuario", usuario);
 
     atualizar();
 }
@@ -155,7 +156,6 @@ function login(){
 // =====================
 function atualizar(){
 
-    // limpa antes de reescrever (evita bug visual)
     document.getElementById("fila").innerText = "";
     document.getElementById("ativos").innerText = "";
     document.getElementById("espera").innerText = "";
@@ -176,7 +176,6 @@ function atualizar(){
     let espera = fila.slice(6);
     document.getElementById("espera").innerText = "Espera: " + espera.join(", ");
 
-    // STATUS DO USUÁRIO
     if(usuario){
 
         document.getElementById("user").innerText = "Logado: " + usuario;
@@ -204,7 +203,6 @@ function rodar(){
 
     let ativos = fila.slice(0,6);
 
-    // soma horas para todos os 6 ativos
     ativos.forEach(id=>{
         if(!usuarios[id]){
             usuarios[id] = { horas: 0 };
@@ -212,14 +210,11 @@ function rodar(){
         usuarios[id].horas += 6;
     });
 
-    // salva horas
     localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
-    // gira fila
     let usados = fila.splice(0,6);
     fila = fila.concat(usados);
 
-    // salva fila
     localStorage.setItem("fila", JSON.stringify(fila));
 
     atualizar();
@@ -244,8 +239,8 @@ function add10(){
 // INICIAR SISTEMA
 // =====================
 iniciar();
-atualizar(); 
-    
+atualizar();
+
 </script>
 
 </body>
