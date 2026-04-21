@@ -231,9 +231,33 @@ function add10(){
     salvar();
     atualizar();
 }
+    function rodar() {
 
-iniciar();
-atualizar();
+    // 1. pega os 6 primeiros (quem participou hoje)
+    let ativos = fila.slice(0, 6);
+
+    // 2. soma horas pra cada um deles
+    ativos.forEach(id => {
+
+        if (!usuarios[id]) {
+            usuarios[id] = { horas: 0 };
+        }
+
+        usuarios[id].horas += 6; // cada rodada = 6h de participação
+    });
+
+    // 3. salva banco de horas
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+    // 4. move os 6 primeiros pro final da fila
+    let usados = fila.splice(0, 6);
+    fila = fila.concat(usados);
+
+    // 5. atualiza tela
+    atualizar();
+}
+
+
 
 </script>
     <script>
