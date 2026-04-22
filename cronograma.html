@@ -122,7 +122,7 @@ button {
 // =====================
 let fila = JSON.parse(localStorage.getItem("fila")) || [];
 let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
-let usuario = localStorage.getItem("usuario");
+let usuario = sessionStorage.getItem("usuario");
 
 // =====================
 // INICIAR FILA
@@ -145,12 +145,13 @@ function login(){
         return;
     }
 
-    usuario = Number(nome); // 🔥 agora é número de verdade
-    localStorage.setItem("usuario", usuario);
+    usuario = Number(nome);
+
+    // 🔥 AQUI É A MUDANÇA IMPORTANTE
+    sessionStorage.setItem("usuario", usuario);
 
     atualizar();
 }
-
 // =====================
 // ATUALIZAR TELA
 // =====================
