@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cronograma PRO APP</title>
+<title>Cronograma PRO Plataforma</title>
 
 <style>
 body{
@@ -13,18 +13,8 @@ background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
 color:white;
 }
 
-.container{
-padding:20px;
-max-width:900px;
-margin:auto;
-}
-
-.card{
-background:rgba(255,255,255,0.05);
-padding:15px;
-border-radius:15px;
-margin-bottom:15px;
-}
+.container{padding:20px;max-width:900px;margin:auto}
+.card{background:rgba(255,255,255,0.05);padding:15px;border-radius:15px;margin-bottom:15px}
 
 input,button{
 width:100%;
@@ -49,15 +39,28 @@ border-radius:10px;
 }
 
 .highlight{color:cyan}
-</style>
 
+.admin{
+display:none;
+background:#111;
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>🚀 Cronograma PRO</h1>
+<h1 onclick="abrirAdmin()">🚀 Cronograma PRO</h1>
+
+<div id="adminBox" class="admin">
+<h3>🔐 ADMIN</h3>
+<button onclick="add10()">+10 usuários</button>
+<button onclick="resetarSistema()">RESET TOTAL</button>
+</div>
 
 <div class="card">
 <h2>Login</h2>
@@ -70,10 +73,7 @@ border-radius:10px;
 <div class="card">
 <h2>Fila</h2>
 <div class="lista" id="fila"></div>
-
 <button onclick="rodar()">Próximo Dia</button>
-<button onclick="add10()">+10 usuários</button>
-<button onclick="resetarSistema()">Reset</button>
 </div>
 
 <div class="card">
@@ -87,6 +87,11 @@ border-radius:10px;
 <h2>Lives (3 simultâneas)</h2>
 <p id="ativos"></p>
 <p id="espera"></p>
+</div>
+
+<div class="card">
+<h2>🏆 Ranking</h2>
+<div id="ranking"></div>
 </div>
 
 <div class="card">
@@ -120,123 +125,135 @@ let usuario = Number(sessionStorage.getItem("usuario")) || null;
 
 let iniciado = false;
 
-/* =========================
-   LOGIN / LOGOUT
-========================= */
+/* ================= ADMIN ================= */
+window.abrirAdmin = () => {
+let senha = prompt("Senha admin:");
+if(senha === "admin123"){
+document.getElementById("adminBox").style.display="block";
+}
+};
+
+/* ================= LOGIN ================= */
 window.login = () => {
 let n = Number(document.getElementById("nome").value);
-if(!n) return;
+
+if(!n || n <= 0){
+alert("Número inválido");
+return;
+}
 
 usuario = n;
 sessionStorage.setItem("usuario", n);
+
+if(!fila.includes(n)){
+fila.push(n);
+set(filaRef,fila);
+}
+
 render();
 };
 
 window.logout = () => {
 sessionStorage.clear();
-usuario = null;
+usuario=null;
 render();
 };
 
-/* =========================
-   FIREBASE SYNC + INIT FIX
-========================= */
-onValue(filaRef, async (snap) => {
+/* ================= FIREBASE ================= */
+onValue(filaRef, async snap => {
 
-const v = snap.val();
+let v = snap.val();
 
-// normaliza fila
 fila = Array.isArray(v) ? v : (v ? Object.values(v) : []);
 
-// 🔥 INICIALIZAÇÃO FIXA (10 usuários base)
+// INIT automático
 if(!iniciado && fila.length === 0){
-
-for(let i = 1; i <= 10; i++){
-fila.push(i);
-}
-
-await set(filaRef, fila);
-iniciado = true;
+for(let i=1;i<=10;i++) fila.push(i);
+await set(filaRef,fila);
+iniciado=true;
 }
 
 render();
 });
 
-onValue(usuariosRef, (snap) => {
+onValue(usuariosRef, snap=>{
 usuarios = snap.val() || {};
 render();
 });
 
-/* =========================
-   RENDER CENTRAL
-========================= */
+/* ================= RENDER ================= */
 function render(){
 
 document.getElementById("fila").innerText = fila.join(", ");
 
 let ativos = fila.slice(0,6);
 
-// 3 lives simultâneas
 document.getElementById("ativos").innerText =
-`Live 1: ${ativos[0]||"-"} + ${ativos[1]||"-"} | Live 2: ${ativos[2]||"-"} + ${ativos[3]||"-"} | Live 3: ${ativos[4]||"-"} + ${ativos[5]||"-"}`;
+`Live1: ${ativos[0]||"-"} + ${ativos[1]||"-"} | Live2: ${ativos[2]||"-"} + ${ativos[3]||"-"} | Live3: ${ativos[4]||"-"} + ${ativos[5]||"-"}`;
 
 document.getElementById("espera").innerText =
 fila.slice(6).join(", ") || "-";
 
 document.getElementById("total").innerText =
-"Total: " + fila.length;
+"Total: "+fila.length;
 
 document.getElementById("dias").innerText =
-"3 lives fixas / 6 usuários por ciclo";
+"Ciclo: 6 por dia";
 
 if(usuario !== null){
 
 document.getElementById("user").innerText =
-"Logado: " + usuario;
+"Logado: "+usuario;
 
 document.getElementById("minhaVez").innerText =
-ativos.includes(usuario) ? "🔥 SUA VEZ HOJE" : "Aguardando";
+ativos.includes(usuario)?"🔥 HOJE É SUA LIVE":"Aguardando";
 
-if(!usuarios[usuario]) usuarios[usuario] = { horas: 0 };
+if(!usuarios[usuario]) usuarios[usuario] = {horas:0};
 
 document.getElementById("horas").innerText =
 (usuarios[usuario].horas || 0) + "h";
 
 }
 
+renderRanking();
 }
 
-/* =========================
-   LÓGICA DO DIA (SAAS CORE)
-========================= */
+/* ================= RANKING ================= */
+function renderRanking(){
+
+let lista = Object.entries(usuarios)
+.sort((a,b)=> (b[1].horas||0)-(a[1].horas||0))
+.slice(0,10);
+
+document.getElementById("ranking").innerHTML =
+lista.map(u=>`#${u[0]} - ${u[1].horas}h`).join("<br>");
+}
+
+/* ================= LÓGICA ================= */
 window.rodar = () => {
 
 let ativos = fila.slice(0,6);
 
-// 3 lives simultâneas → cada pessoa recebe 18h
 const lives = [
-[ativos[0], ativos[1]],
-[ativos[2], ativos[3]],
-[ativos[4], ativos[5]]
+[ativos[0],ativos[1]],
+[ativos[2],ativos[3]],
+[ativos[4],ativos[5]]
 ];
 
-lives.forEach(par => {
-par.forEach(id => {
-if(!usuarios[id]) usuarios[id] = { horas: 0 };
+lives.forEach(par=>{
+par.forEach(id=>{
+if(!usuarios[id]) usuarios[id]={horas:0};
 usuarios[id].horas += 18;
 });
 });
 
-// ciclo contínuo
 fila = fila.slice(6).concat(ativos);
 
-set(filaRef, fila);
-update(usuariosRef, usuarios);
+set(filaRef,fila);
+update(usuariosRef,usuarios);
 };
 
-/* =========================
-   ADD 10 FIXO
-========================= */
+/* ================= ADD ================= */
 window.add10 = () => {
 
 let base = fila.length;
@@ -247,17 +264,15 @@ fila.push(base+i);
 }
 }
 
-set(filaRef, fila);
+set(filaRef,fila);
 };
 
-/* =========================
-   RESET TOTAL
-========================= */
+/* ================= RESET ================= */
 window.resetarSistema = () => {
-set(filaRef, []);
-set(usuariosRef, {});
+set(filaRef,[]);
+set(usuariosRef,{});
 sessionStorage.clear();
-iniciado = false;
+iniciado=false;
 };
 
 </script>
