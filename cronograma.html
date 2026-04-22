@@ -114,113 +114,150 @@ const db = getDatabase(app);
 const filaRef = ref(db,"fila");
 const usuariosRef = ref(db,"usuarios");
 
-let fila=[];
-let usuarios={};
+let fila = [];
+let usuarios = {};
+let usuario = Number(sessionStorage.getItem("usuario")) || null;
 
-let usuario = Number(sessionStorage.getItem("usuario"))||null;
+let iniciado = false;
 
-/* LOGIN */
-window.login=()=>{
-let n=Number(document.getElementById("nome").value);
-if(!n)return;
-usuario=n;
-sessionStorage.setItem("usuario",n);
+/* =========================
+   LOGIN / LOGOUT
+========================= */
+window.login = () => {
+let n = Number(document.getElementById("nome").value);
+if(!n) return;
+
+usuario = n;
+sessionStorage.setItem("usuario", n);
 render();
 };
 
-/* LOGOUT */
-window.logout=()=>{
+window.logout = () => {
 sessionStorage.clear();
-usuario=null;
+usuario = null;
 render();
 };
 
-/* FIREBASE */
-onValue(filaRef,s=>{
-const v=s.val();
-fila = Array.isArray(v)?v:Object.values(v||{});
+/* =========================
+   FIREBASE SYNC + INIT FIX
+========================= */
+onValue(filaRef, async (snap) => {
+
+const v = snap.val();
+
+// normaliza fila
+fila = Array.isArray(v) ? v : (v ? Object.values(v) : []);
+
+// 🔥 INICIALIZAÇÃO FIXA (10 usuários base)
+if(!iniciado && fila.length === 0){
+
+for(let i = 1; i <= 10; i++){
+fila.push(i);
+}
+
+await set(filaRef, fila);
+iniciado = true;
+}
+
 render();
 });
 
-onValue(usuariosRef,s=>{
-usuarios=s.val()||{};
+onValue(usuariosRef, (snap) => {
+usuarios = snap.val() || {};
 render();
 });
 
-/* RENDER */
+/* =========================
+   RENDER CENTRAL
+========================= */
 function render(){
 
-document.getElementById("fila").innerText=fila.join(", ");
+document.getElementById("fila").innerText = fila.join(", ");
 
-let ativos=fila.slice(0,6);
+let ativos = fila.slice(0,6);
 
-// 🎥 3 lives simultâneas fixas
-document.getElementById("ativos").innerText=
-`Live 1: ${ativos[0]} + ${ativos[1]} | Live 2: ${ativos[2]} + ${ativos[3]} | Live 3: ${ativos[4]} + ${ativos[5]}`;
+// 3 lives simultâneas
+document.getElementById("ativos").innerText =
+`Live 1: ${ativos[0]||"-"} + ${ativos[1]||"-"} | Live 2: ${ativos[2]||"-"} + ${ativos[3]||"-"} | Live 3: ${ativos[4]||"-"} + ${ativos[5]||"-"}`;
 
-document.getElementById("espera").innerText=fila.slice(6).join(", ")||"-";
+document.getElementById("espera").innerText =
+fila.slice(6).join(", ") || "-";
 
-document.getElementById("total").innerText="Total: "+fila.length;
+document.getElementById("total").innerText =
+"Total: " + fila.length;
 
-document.getElementById("dias").innerText="3 lives fixas / 6 participantes por ciclo";
+document.getElementById("dias").innerText =
+"3 lives fixas / 6 usuários por ciclo";
 
-if(usuario!==null){
+if(usuario !== null){
 
-document.getElementById("user").innerText="Logado: "+usuario;
+document.getElementById("user").innerText =
+"Logado: " + usuario;
 
-document.getElementById("minhaVez").innerText=
-ativos.includes(usuario)?"🔥 SUA LIVE HOJE":"Aguardando";
+document.getElementById("minhaVez").innerText =
+ativos.includes(usuario) ? "🔥 SUA VEZ HOJE" : "Aguardando";
 
-if(!usuarios[usuario])usuarios[usuario]={horas:0};
+if(!usuarios[usuario]) usuarios[usuario] = { horas: 0 };
 
-document.getElementById("horas").innerText=
-(usuarios[usuario].horas||0)+"h";
+document.getElementById("horas").innerText =
+(usuarios[usuario].horas || 0) + "h";
 
 }
 
 }
 
-/* RODAR DIA */
-window.rodar=()=>{
+/* =========================
+   LÓGICA DO DIA (SAAS CORE)
+========================= */
+window.rodar = () => {
 
-let ativos=fila.slice(0,6);
+let ativos = fila.slice(0,6);
 
-// 🔥 lógica correta: 3 lives simultâneas (pares)
-const lives=[
-[ativos[0],ativos[1]],
-[ativos[2],ativos[3]],
-[ativos[4],ativos[5]]
+// 3 lives simultâneas → cada pessoa recebe 18h
+const lives = [
+[ativos[0], ativos[1]],
+[ativos[2], ativos[3]],
+[ativos[4], ativos[5]]
 ];
 
-// cada live roda ao mesmo tempo → 18h por pessoa
-lives.forEach(par=>{
-par.forEach(id=>{
-if(!usuarios[id])usuarios[id]={horas:0};
-usuarios[id].horas+=18;
+lives.forEach(par => {
+par.forEach(id => {
+if(!usuarios[id]) usuarios[id] = { horas: 0 };
+usuarios[id].horas += 18;
 });
 });
 
-// ciclo fixo
-fila=[...fila.slice(6),...ativos];
+// ciclo contínuo
+fila = fila.slice(6).concat(ativos);
 
-set(filaRef,fila);
-update(usuariosRef,usuarios);
+set(filaRef, fila);
+update(usuariosRef, usuarios);
 };
 
-/* ADD 10 */
-window.add10=()=>{
-let base=fila.length;
+/* =========================
+   ADD 10 FIXO
+========================= */
+window.add10 = () => {
+
+let base = fila.length;
+
 for(let i=1;i<=10;i++){
-if(!fila.includes(base+i))fila.push(base+i);
+if(!fila.includes(base+i)){
+fila.push(base+i);
 }
-set(filaRef,fila);
+}
+
+set(filaRef, fila);
 };
 
-/* RESET */
-window.resetarSistema=()=>{
-set(filaRef,[]);
-set(usuariosRef,{});
+/* =========================
+   RESET TOTAL
+========================= */
+window.resetarSistema = () => {
+set(filaRef, []);
+set(usuariosRef, {});
 sessionStorage.clear();
+iniciado = false;
 };
 
 </script>
