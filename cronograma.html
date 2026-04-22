@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
@@ -20,9 +20,7 @@ body {
     margin:auto;
 }
 
-h1 {
-    text-align:center;
-}
+h1 { text-align:center; }
 
 .card {
     background: rgba(255,255,255,0.05);
@@ -59,9 +57,7 @@ button {
     border-radius:10px;
 }
 
-.highlight {
-    color:cyan;
-}
+.highlight { color:cyan; }
 </style>
 
 <link rel="manifest" href="manifest.json">
@@ -75,7 +71,6 @@ button {
 
 <h1>🚀 Cronograma PRO</h1>
 
-<!-- LOGIN -->
 <div class="card">
 <h2>🔐 Login</h2>
 <input id="nome" placeholder="Seu número (ex: 1, 2, 3...)">
@@ -84,7 +79,6 @@ button {
 <p id="user"></p>
 </div>
 
-<!-- CADASTRO -->
 <div class="card">
 <h2>👥 Participantes</h2>
 <div class="lista" id="fila"></div>
@@ -93,7 +87,6 @@ button {
 <button onclick="rodar()">🚀 Simular Próximo Dia</button>
 </div>
 
-<!-- STATUS -->
 <div class="card">
 <h2>📊 Status Geral</h2>
 <p id="total"></p>
@@ -101,14 +94,12 @@ button {
 <p id="minhaVez"></p>
 </div>
 
-<!-- HOJE -->
 <div class="card">
 <h2>🎥 Lives de Hoje</h2>
 <p id="ativos"></p>
 <p id="espera"></p>
 </div>
 
-<!-- HORAS -->
 <div class="card">
 <h2>⏱️ Horas Lives</h2>
 <p id="horas"></p>
@@ -123,7 +114,9 @@ button {
 // =====================
 let fila = JSON.parse(localStorage.getItem("fila")) || [];
 let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
-let usuario = Number(sessionStorage.getItem("usuario")) || null;
+let usuario = sessionStorage.getItem("usuario");
+
+usuario = usuario ? Number(usuario) : null;
 
 // =====================
 // INICIAR FILA
@@ -151,11 +144,6 @@ function login(){
     atualizar();
 }
 
-function sair(){
-    sessionStorage.removeItem("usuario");
-    usuario = null;
-    atualizar();
-}
 // =====================
 // LOGOUT
 // =====================
@@ -170,12 +158,13 @@ function logout(){
 // =====================
 function atualizar(){
 
-    // LIMPA TUDO
+    // LIMPEZA TOTAL (resolve seu problema)
     document.getElementById("user").innerText = "";
     document.getElementById("horas").innerText = "";
     document.getElementById("minhaVez").innerText = "";
     document.getElementById("ativos").innerText = "";
     document.getElementById("espera").innerText = "";
+    document.getElementById("fila").innerText = "";
 
     let total = fila.length;
     let dias = Math.ceil(total / 6);
@@ -187,11 +176,19 @@ function atualizar(){
 
     let ativos = fila.slice(0,6);
 
-    document.getElementById("ativos").innerText =
-        "A:"+ativos[0]+" B:"+ativos[1]+" | C:"+ativos[2]+" D:"+ativos[3]+" | E:"+ativos[4]+" F:"+ativos[5];
+    // evita undefined
+    let nomes = ["A","B","C","D","E","F"];
+    let textoAtivos = "";
+
+    for(let i=0;i<6;i++){
+        textoAtivos += nomes[i] + ":" + (ativos[i] || "-") + " ";
+    }
+
+    document.getElementById("ativos").innerText = textoAtivos;
 
     let espera = fila.slice(6);
-    document.getElementById("espera").innerText = "Espera: " + espera.join(", ");
+    document.getElementById("espera").innerText =
+        "Espera: " + (espera.length ? espera.join(", ") : "-");
 
     if(usuario !== null){
 
