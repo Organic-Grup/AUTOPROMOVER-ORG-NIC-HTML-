@@ -3,73 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Cronograma PRO</title>
+<title>Cronograma PRO APP</title>
 
 <style>
-body {
-    margin:0;
-    font-family: Arial;
-    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-    color:white;
-}
-.container { padding:20px; max-width:900px; margin:auto; }
-h1 { text-align:center; cursor:pointer; }
-
-.card {
-    background: rgba(255,255,255,0.05);
-    padding:15px;
-    border-radius:15px;
-    margin-bottom:15px;
-    box-shadow:0 0 15px rgba(0,255,255,0.2);
-}
-
-input {
-    width:100%; padding:10px; margin-top:10px;
-    border-radius:8px; border:none;
-}
-
-button {
-    padding:10px; margin-top:10px; width:100%;
-    border:none; border-radius:10px;
-    background:cyan; font-weight:bold; cursor:pointer;
-}
-
-.lista {
-    max-height:150px;
-    overflow:auto;
-    background:rgba(0,0,0,0.4);
-    padding:10px;
-    border-radius:10px;
-}
-
-.highlight { color:cyan; }
-
-.admin {
-    display:none;
-    background:#111;
-    padding:15px;
-    border-radius:10px;
-    margin-top:10px;
-}
+body{margin:0;font-family:Arial;background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);color:white}
+.container{padding:20px;max-width:900px;margin:auto}
+.card{background:rgba(255,255,255,0.05);padding:15px;border-radius:15px;margin-bottom:15px}
+input,button{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:none}
+button{background:cyan;font-weight:bold;cursor:pointer}
+.lista{max-height:150px;overflow:auto;background:#0005;padding:10px;border-radius:10px}
+.highlight{color:cyan}
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
 
-<h1 onclick="abrirAdmin()">🚀 Cronograma PRO</h1>
-
-<div id="adminPanel" class="admin">
-<h3>🔐 Admin Panel</h3>
-<button onclick="resetarSistema()">Reset Total</button>
-<button onclick="add10()">+10 usuários</button>
-</div>
+<h1>🚀 Cronograma PRO</h1>
 
 <div class="card">
-<h2>🔐 Login</h2>
+<h2>Login</h2>
 <input id="nome" placeholder="Seu número">
 <button onclick="login()">Entrar</button>
 <button onclick="logout()">Sair</button>
@@ -77,32 +31,28 @@ button {
 </div>
 
 <div class="card">
-<h2>👥 Participantes</h2>
+<h2>Fila</h2>
 <div class="lista" id="fila"></div>
-
-<button onclick="rodar()">🚀 Simular Próximo Dia</button>
+<button onclick="rodar()">Próximo Dia</button>
+<button onclick="add10()">+10</button>
+<button onclick="resetarSistema()">Reset</button>
 </div>
 
 <div class="card">
-<h2>📊 Status Geral</h2>
+<h2>Status</h2>
 <p id="total"></p>
 <p id="dias"></p>
 <p id="minhaVez"></p>
 </div>
 
 <div class="card">
-<h2>🎥 Lives de Hoje</h2>
+<h2>Lives</h2>
 <p id="ativos"></p>
 <p id="espera"></p>
 </div>
 
 <div class="card">
-<h2>🏆 Ranking (Horas)</h2>
-<div id="ranking"></div>
-</div>
-
-<div class="card">
-<h2>⏱️ Suas Horas</h2>
+<h2>Horas</h2>
 <p id="horas"></p>
 </div>
 
@@ -112,184 +62,116 @@ button {
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getDatabase,
-  ref,
-  set,
-  update,
-  onValue,
-  get
+getDatabase, ref, set, onValue, update
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// CONFIG
-const firebaseConfig = {
-  apiKey: "AIzaSyCIzJ8ggh1nJozmZEjSUcT9fUedam-7fA",
-  authDomain: "cronograma-pro-407b4.firebaseapp.com",
-  databaseURL: "https://cronograma-pro-407b4-default-rtdb.firebaseio.com/",
-  projectId: "cronograma-pro-407b4",
-  storageBucket: "cronograma-pro-407b4.appspot.com",
-  messagingSenderId: "740937794761",
-  appId: "1:740937794761:web:dbf86a5f2a574812837918"
-};
+const app = initializeApp({
+apiKey:"AIzaSyCIzJ8ggh1nJozmZEjSUcT9fUedam-7fA",
+authDomain:"cronograma-pro-407b4.firebaseapp.com",
+databaseURL:"https://cronograma-pro-407b4-default-rtdb.firebaseio.com/",
+projectId:"cronograma-pro-407b4"
+});
 
-const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const filaRef = ref(db, "fila");
-const usuariosRef = ref(db, "usuarios");
+const filaRef=ref(db,"fila");
+const usuariosRef=ref(db,"usuarios");
 
-let fila = [];
-let usuarios = {};
+let fila=[];
+let usuarios={};
 
-let usuario = sessionStorage.getItem("usuario");
-usuario = usuario ? Number(usuario) : null;
+let usuario = Number(sessionStorage.getItem("usuario"))||null;
 
-/* =========================
-   ADMIN
-========================= */
-window.abrirAdmin = function () {
-  let senha = prompt("Senha admin:");
-
-  if (senha === "1234") {
-    document.getElementById("adminPanel").style.display = "block";
-  }
+/* LOGIN */
+window.login=()=>{
+let n=Number(document.getElementById("nome").value);
+if(!n)return;
+usuario=n;
+sessionStorage.setItem("usuario",n);
+render();
 };
 
-/* =========================
-   LOGIN
-========================= */
-window.login = function () {
-  let nome = document.getElementById("nome").value.trim();
-
-  if (nome === "" || isNaN(nome)) return alert("Digite número!");
-
-  usuario = Number(nome);
-  sessionStorage.setItem("usuario", usuario);
-  atualizarUI();
+/* LOGOUT */
+window.logout=()=>{
+sessionStorage.clear();
+usuario=null;
+render();
 };
 
-window.logout = function () {
-  sessionStorage.removeItem("usuario");
-  usuario = null;
-  atualizarUI();
-};
-
-/* =========================
-   FIREBASE
-========================= */
-onValue(filaRef, snap => {
-  const data = snap.val();
-  fila = Array.isArray(data) ? data : Object.values(data || []);
-  atualizarUI();
+/* FIREBASE SAFE SYNC */
+onValue(filaRef,s=>{
+const val=s.val();
+fila = Array.isArray(val) ? val : Object.values(val||{});
+render();
 });
 
-onValue(usuariosRef, snap => {
-  usuarios = snap.val() || {};
-  atualizarUI();
+onValue(usuariosRef,s=>{
+usuarios=s.val()||{};
+render();
 });
 
-/* =========================
-   UI
-========================= */
-function atualizarUI() {
+/* RENDER ÚNICO (EVITA LOOP) */
+function render(){
 
-  document.getElementById("fila").innerText = fila.join(", ");
+document.getElementById("fila").innerText=fila.join(", ");
 
-  let total = fila.length;
-  let dias = Math.ceil(total / 6);
+let ativos=fila.slice(0,6);
 
-  document.getElementById("total").innerText = "Total: " + total;
-  document.getElementById("dias").innerText = "Ciclo: " + dias + " dias";
+document.getElementById("ativos").innerText=
+ativos.map((a,i)=>`L${i+1}:${a||"-"}`).join(" ");
 
-  let ativos = fila.slice(0, 6);
+document.getElementById("espera").innerText=fila.slice(6).join(", ")||"-";
 
-  document.getElementById("ativos").innerText =
-    ativos.map((a,i)=>`L${i+1}:${a||"-"}`).join(" ");
+document.getElementById("total").innerText="Total: "+fila.length;
 
-  let espera = fila.slice(6);
-  document.getElementById("espera").innerText =
-    espera.length ? espera.join(", ") : "-";
+document.getElementById("dias").innerText="Dias: "+Math.ceil(fila.length/6);
 
-  // usuário
-  if (usuario !== null) {
+if(usuario!==null){
 
-    document.getElementById("user").innerText = "Logado: " + usuario;
+document.getElementById("user").innerText="Logado "+usuario;
 
-    if (ativos.map(Number).includes(Number(usuario))) {
-      document.getElementById("minhaVez").innerHTML =
-        "<span class='highlight'>🔥 É SUA VEZ</span>";
-    } else {
-      document.getElementById("minhaVez").innerText = "Aguardando...";
-    }
+document.getElementById("minhaVez").innerText=
+ativos.includes(usuario)?"🔥 SUA VEZ":"Aguardando";
 
-    if (!usuarios[usuario]) {
-      usuarios[usuario] = { horas: 0 };
-      update(usuariosRef, usuarios);
-    }
+if(!usuarios[usuario])usuarios[usuario]={horas:0};
 
-    document.getElementById("horas").innerText =
-      usuarios[usuario].horas + "h";
-  }
+document.getElementById("horas").innerText=
+(usuarios[usuario].horas||0)+"h";
 
-  renderRanking();
 }
 
-/* =========================
-   RANKING
-========================= */
-function renderRanking() {
-
-  let lista = Object.entries(usuarios)
-    .sort((a,b)=>b[1].horas - a[1].horas)
-    .slice(0,10);
-
-  document.getElementById("ranking").innerHTML =
-    lista.map(u=>`#${u[0]} - ${u[1].horas}h`).join("<br>");
 }
 
-/* =========================
-   RODAR DIA
-========================= */
-window.rodar = function () {
+/* RODAR DIA */
+window.rodar=()=>{
 
-  let ativos = fila.slice(0, 6);
+let ativos=fila.slice(0,6);
 
-  ativos.forEach(id => {
-    if (!usuarios[id]) usuarios[id] = { horas: 0 };
-    usuarios[id].horas += 6;
-  });
+ativos.forEach(id=>{
+if(!usuarios[id])usuarios[id]={horas:0};
+usuarios[id].horas+=6;
+});
 
-  let usados = fila.splice(0, 6);
-  fila = fila.concat(usados);
+fila=fila.slice(6).concat(ativos);
 
-  set(filaRef, fila);
-  update(usuariosRef, usuarios);
+set(filaRef,fila);
+update(usuariosRef,usuarios);
 };
 
-/* =========================
-   ADD 10 (ANTI DUPLICADO)
-========================= */
-window.add10 = function () {
-
-  let atual = fila.length;
-
-  for (let i = 1; i <= 10; i++) {
-    if (!fila.includes(atual + i)) {
-      fila.push(atual + i);
-    }
-  }
-
-  set(filaRef, fila);
+/* ADD */
+window.add10=()=>{
+let base=fila.length;
+for(let i=1;i<=10;i++){
+if(!fila.includes(base+i))fila.push(base+i);
+}
+set(filaRef,fila);
 };
 
-/* =========================
-   RESET
-========================= */
-window.resetarSistema = function () {
-  if (confirm("Resetar tudo?")) {
-    set(filaRef, []);
-    set(usuariosRef, {});
-    sessionStorage.clear();
-  }
+/* RESET */
+window.resetarSistema=()=>{
+set(filaRef,[]);
+set(usuariosRef,{});
+sessionStorage.clear();
 };
 
 </script>
