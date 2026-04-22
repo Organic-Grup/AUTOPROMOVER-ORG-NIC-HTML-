@@ -151,6 +151,11 @@ function login(){
     atualizar();
 }
 
+function sair(){
+    sessionStorage.removeItem("usuario");
+    usuario = null;
+    atualizar();
+}
 // =====================
 // LOGOUT
 // =====================
