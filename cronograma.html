@@ -90,11 +90,18 @@ button {
 </div>
 
 </div>
-    
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  getDatabase,
+  ref,
+  set,
+  update,
+  onValue,
+  get
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // CONFIG
 const firebaseConfig = {
@@ -107,40 +114,46 @@ const firebaseConfig = {
   appId: "1:740937794761:web:dbf86a5f2a574812837918"
 };
 
+// INIT
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// REFERÊNCIAS
+// REF
 const filaRef = ref(db, "fila");
 const usuariosRef = ref(db, "usuarios");
 
+// STATE
 let fila = [];
 let usuarios = {};
 let usuario = sessionStorage.getItem("usuario");
 usuario = usuario ? Number(usuario) : null;
 
-// LOGIN
-window.login = function(){
+/* =========================
+   LOGIN / LOGOUT
+========================= */
+window.login = function () {
   let nome = document.getElementById("nome").value.trim();
 
-  if(nome === "" || isNaN(nome)){
+  if (nome === "" || isNaN(nome)) {
     alert("Digite apenas números!");
     return;
   }
 
   usuario = Number(nome);
   sessionStorage.setItem("usuario", usuario);
+
   atualizarUI();
 };
 
-// LOGOUT
-window.logout = function(){
+window.logout = function () {
   sessionStorage.removeItem("usuario");
   usuario = null;
   atualizarUI();
 };
 
-// 🔥 TEMPO REAL
+/* =========================
+   FIREBASE REALTIME
+========================= */
 onValue(filaRef, snap => {
   fila = snap.val() || [];
   atualizarUI();
@@ -151,8 +164,10 @@ onValue(usuariosRef, snap => {
   atualizarUI();
 });
 
-// UI
-function atualizarUI(){
+/* =========================
+   UI PRINCIPAL
+========================= */
+function atualizarUI() {
 
   document.getElementById("fila").innerText = fila.join(", ");
 
@@ -162,11 +177,11 @@ function atualizarUI(){
   document.getElementById("total").innerText = "Total: " + total;
   document.getElementById("dias").innerText = "Ciclo: " + dias + " dias";
 
-  let ativos = fila.slice(0,6);
-  let letras = ["A","B","C","D","E","F"];
+  let ativos = fila.slice(0, 6);
+  let letras = ["A", "B", "C", "D", "E", "F"];
   let texto = "";
 
-  for(let i=0;i<6;i++){
+  for (let i = 0; i < 6; i++) {
     texto += `${letras[i]}:${ativos[i] || "-"} `;
   }
 
@@ -176,73 +191,85 @@ function atualizarUI(){
   document.getElementById("espera").innerText =
     "Espera: " + (espera.length ? espera.join(", ") : "-");
 
-  if(usuario !== null){
+  if (usuario !== null) {
 
     document.getElementById("user").innerText = "Logado: " + usuario;
 
-    if(ativos.includes(usuario)){
+    if (ativos && ativos.includes(usuario)) {
       document.getElementById("minhaVez").innerHTML =
         "<span class='highlight'>🔥 É SUA VEZ HOJE!</span>";
     } else {
       document.getElementById("minhaVez").innerText = "Aguardando...";
     }
 
-    if(!usuarios[usuario]){
+    if (!usuarios[usuario]) {
       usuarios[usuario] = { horas: 0 };
-      update(usuariosRef, usuarios);
+      set(usuariosRef, usuarios); // CORRIGIDO (sem update perigoso)
     }
 
     document.getElementById("horas").innerText =
-      "Você assistiu: " + usuarios[usuario].horas + "h";
+      "Você assistiu: " + (usuarios[usuario]?.horas || 0) + "h";
   }
 }
 
-// RODAR
-window.rodar = function(){
+/* =========================
+   RODAR DIA
+========================= */
+window.rodar = function () {
 
-  let ativos = fila.slice(0,6);
+  let ativos = fila.slice(0, 6);
 
-  ativos.forEach(id=>{
-    if(!usuarios[id]) usuarios[id] = { horas: 0 };
+  ativos.forEach(id => {
+    if (!usuarios[id]) usuarios[id] = { horas: 0 };
     usuarios[id].horas += 6;
   });
 
-  let usados = fila.splice(0,6);
+  let usados = fila.splice(0, 6);
   fila = fila.concat(usados);
 
   set(filaRef, fila);
   set(usuariosRef, usuarios);
 };
 
-// ADD +10
-window.add10 = function(){
+/* =========================
+   ADD +10
+========================= */
+window.add10 = function () {
 
   let atual = fila.length;
 
-  for(let i=1;i<=10;i++){
+  for (let i = 1; i <= 10; i++) {
     fila.push(atual + i);
   }
 
   set(filaRef, fila);
 };
 
-// RESET
-window.resetarSistema = function(){
-  if(confirm("Resetar sistema?")){
+/* =========================
+   RESET
+========================= */
+window.resetarSistema = function () {
+  if (confirm("Resetar sistema?")) {
     set(filaRef, []);
     set(usuariosRef, {});
     sessionStorage.clear();
   }
 };
 
-// INICIAL
-onValue(filaRef, snap => {
-  if(!snap.exists()){
+/* =========================
+   INICIALIZAÇÃO SEGURA
+========================= */
+async function iniciarSistema() {
+  const snap = await get(filaRef);
+
+  if (!snap.exists()) {
     let inicial = [];
-    for(let i=1;i<=10;i++) inicial.push(i);
-    set(filaRef, inicial);
+    for (let i = 1; i <= 10; i++) inicial.push(i);
+    await set(filaRef, inicial);
   }
-});
+}
+
+iniciarSistema();
 
 </script>
 
