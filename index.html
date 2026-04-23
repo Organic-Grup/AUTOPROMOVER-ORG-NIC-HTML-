@@ -7,110 +7,133 @@
 
 <title>Autopromover</title>
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00ffff">
+
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-body{
-margin:0;
-font-family:'Montserrat',Arial;
-background:#0b0f1a;
-color:#e5e7eb;
-text-align:center;
+:root{
+  --bg:#0b0f1a;
+  --panel:#0f172a;
+  --neon:#22c55e;
+  --neon-2:#38bdf8;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
 }
 
-.hero{
-padding:60px 20px;
-}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Montserrat',Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+
+.logo-text{text-align:center;margin-top:30px;animation:fadeIn 1s ease;}
+.logo-white{font-size:52px;font-weight:700;color:#e5e7eb;letter-spacing:3px;}
+.logo-green{font-size:52px;font-weight:700;color:#22c55e;letter-spacing:3px;text-shadow:0 0 8px rgba(34,197,94,0.6),0 0 20px rgba(34,197,94,0.4);animation:glowPulse 2.5s ease-in-out infinite alternate;}
+.logo-sub{font-size:18px;letter-spacing:8px;color:#94a3b8;margin-top:12px;}
+
+@keyframes glowPulse{from{ text-shadow:0 0 6px rgba(34,197,94,0.4);}to{ text-shadow:0 0 18px rgba(34,197,94,0.9);}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.nav{display:flex;justify-content:space-between;padding:15px 30px;background:#0f172a;position:sticky;top:0}
+.nav a{color:#fff;text-decoration:none;margin-left:15px}
+
+.hero{text-align:center;padding:80px 20px}
+.hero h1{font-size:38px;background:linear-gradient(90deg,#38bdf8,#22c55e);-webkit-background-clip:text;color:transparent}
+.hero p{color:#94a3b8}
 
 .btn{
-display:inline-block;
-margin-top:20px;
-padding:14px 30px;
-border-radius:10px;
-background:linear-gradient(90deg,#38bdf8,#22c55e);
-color:#000;
-font-weight:600;
-text-decoration:none;
-opacity:.5;
-pointer-events:none;
+ display:inline-block;margin-top:20px;padding:14px 30px;border-radius:10px;
+ background:linear-gradient(90deg,#38bdf8,#22c55e);
+ color:#000;font-weight:600;text-decoration:none;
+ transition:.3s;
 }
+.btn:hover{transform:scale(1.05);box-shadow:0 0 20px #38bdf8}
 
-.btn.active{
-opacity:1;
-pointer-events:auto;
-}
+.container{max-width:900px;margin:40px auto;padding:20px}
+.card{background:#0f172a;padding:25px;border-radius:12px;margin-top:20px;border:1px solid rgba(255,255,255,0.05)}
 
-.video-box{
-max-width:800px;
-margin:30px auto;
-}
+.footer{text-align:center;margin:30px;color:#94a3b8;font-size:12px}
 </style>
 
 </head>
 
 <body>
 
-<div class="hero">
-
-<h1>Transforme Visualizações em Crescimento Real</h1>
-
-<p>Assista o vídeo para liberar o acesso</p>
-
-<h2>🎥 Vídeo 1: Ensinamento</h2>
-
-<div class="video-box">
-<iframe 
-width="100%" 
-height="400"
-src="https://www.youtube.com/embed/Muf8pp3ukdc"
-frameborder="0"
-allowfullscreen>
-</iframe>
+<div class="header">
+  <div class="logo-text">
+    <span class="logo-white">ORGANIC/</span>
+    <span class="logo-green">HTML</span>
+    <div class="logo-sub">AUTOPROMOVE</div>
+  </div>
 </div>
 
-<a id="btnEntrar" class="btn" href="https://wa.me/13678903119">
-🚀 Liberando acesso...
-</a>
+<div class="nav">
+ <div><strong>Autopromover</strong></div>
+ <div>
+  <a href="#">Início</a>
+  <a class="btn" href="metodo.html">VER MÉTODO</a> 
+  <a class="btn" href="contato.html">ENTRAR</a>
+ </div>
+</div>
 
-<p id="contador"></p>
+<div style="text-align:center; margin:20px;">
+  <a href="cronograma.html">
+    <button style="padding:14px 24px;background:linear-gradient(45deg, cyan, #00f0ff);border:none;border-radius:12px;font-weight:bold;cursor:pointer;box-shadow:0 0 15px cyan;">
+      🚀 Acessar Cronograma
+    </button>
+  </a>
+</div>
+
+<div class="hero">
+ <h1>Transforme Visualizações em Crescimento Real</h1>
+ <p>Entre em um sistema estruturado onde criadores colaboram diariamente para impulsionar alcance.</p>
+
+ <a class="btn" href="https://wa.me/13678903119?text=Quero%20participar%20agora">
+  PARTICIPAR TOTALMENTE GRATUITO
+ </a>
+
+ <div style="margin-top:25px;color:#94a3b8;font-size:14px;">
+ 🔒 Acesso limitado | 🔥 Alta demanda | 📈 Crescimento contínuo
+ </div>
+</div>
+
+<div class="container">
+<div class="card">
+  <h2>📊 Painel do Sistema</h2>
+  <p id="totalUsers">👥 Participantes: ...</p>
+  <p id="totalHoras">⏱️ Horas totais: ...</p>
+</div>
+</div>
+
+<div class="footer">Privacidade garantida</div>
+
+<!-- VIDEO FINAL -->
+<div style="max-width:400px; margin:40px auto; text-align:center;">
+
+  <p style="color:#94a3b8;">🎥 Vídeo 1: Ensinamento</p>
+
+  <iframe 
+    width="100%" 
+    height="220"
+    src="https://www.youtube.com/embed/Muf8pp3ukdc"
+    frameborder="0"
+    allowfullscreen
+    style="border-radius:10px;">
+  </iframe>
+
+  <a id="btnVideo" class="btn" style="opacity:0.5;pointer-events:none;">
+    ⏳ Aguarde 30s...
+  </a>
 
 </div>
 
 <script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, runTransaction, onValue } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const app = initializeApp({
-apiKey:"AIzaSyCIzJ8ggh1nJozmZEjSUcT9fUedam-7fA",
-authDomain:"cronograma-pro-407b4.firebaseapp.com",
-databaseURL:"https://cronograma-pro-407b4-default-rtdb.firebaseio.com/",
-projectId:"cronograma-pro-407b4"
-});
-
-const db = getDatabase(app);
-
-const viewRef = ref(db,"views");
-
-/* CONTADOR */
-onValue(viewRef,s=>{
-document.getElementById("contador").innerText =
-"👁️ Pessoas que visualizaram: " + (s.val() || 0);
-});
-
-/* REGISTRA VISITA */
-runTransaction(viewRef,(v)=>{
-return (v || 0) + 1;
-});
-
-/* LIBERA BOTÃO APÓS 30s */
 setTimeout(()=>{
-let btn = document.getElementById("btnEntrar");
-btn.classList.add("active");
-btn.innerText = "🚀 Entrar agora";
+  const btn = document.getElementById("btnVideo");
+  btn.style.opacity = "1";
+  btn.style.pointerEvents = "auto";
+  btn.innerText = "🚀 Entrar após assistir";
+  btn.href = "https://wa.me/13678903119?text=Acabei%20de%20ver%20o%20vídeo";
 },30000);
-
 </script>
 
 </body>
